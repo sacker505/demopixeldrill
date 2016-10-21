@@ -1,0 +1,79 @@
+{
+  "width": 1600,
+  "height": 300,
+  "padding": {"top": 10, "left": 30, "bottom": 30, "right": 10},
+  "data": [
+    {
+      "name": "table",
+      "format": {"type": "json", "parse": {"y":"number", "x":"date"}}
+    },
+    {
+      "name": "stats",
+      "source": "table",
+      "transform": [
+        {
+          "type": "aggregate",
+          "groupby": ["x"],
+          "summarize": [{"field": "y", "ops": ["sum"]}]
+        }
+      ]
+    }
+  ],
+  "scales": [
+    {
+      "name": "x",
+      "type": "time",
+      "range": "width",
+      "domain": {"data": "table", "field": "x"}
+    },
+    {
+      "name": "y",
+      "type": "linear",
+      "range": "height",
+      "nice": true,
+      "domain": {"data": "stats", "field": "sum_y"}
+    },
+    {
+      "name": "color",
+      "type": "ordinal",
+      "range": ["red", "green", "blue"],
+      "domain": {"data": "table", "field": "c"}
+    }
+  ],
+  "axes": [
+    {"type": "x", "scale": "x"},
+    {"type": "y", "scale": "y"}
+  ],
+  "marks": [
+    {
+      "type": "group",
+      "from": {
+        "data": "table",
+        "transform": [
+          {"type": "stack", "groupby": ["x"], "sortby": ["c"], "field": "y"},
+          {"type": "facet", "groupby": ["c"]}
+        ]
+      },
+      "marks": [
+        {
+          "type": "area",
+          "properties": {
+            "enter": {
+              "interpolate": {"value": "monotone"},
+              "x": {"scale": "x", "field": "x"},
+              "y": {"scale": "y", "field": "layout_start"},
+              "y2": {"scale": "y", "field": "layout_end"},
+              "fill": {"scale": "color", "field": "c"}
+            },
+            "update": {
+              "fillOpacity": {"value": 1}
+            },
+            "hover": {
+              "fillOpacity": {"value": 0.5}
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
